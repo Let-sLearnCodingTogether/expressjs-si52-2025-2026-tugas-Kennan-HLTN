@@ -11,9 +11,9 @@ api.get('/users', authController.getAllUsers);
 api.put('/users/:id', authController.updateUser);
 
 api.get("/todo", protect, todoController.listTodo);
-api.post("/todo", protect, todoController.createNewTodo);
-api.put("/todo/:id", protect, todoController.updateTodo);
-api.patch("/todo/:id/completion", protect, todoController.toggleCompletion);
-api.delete("/todo/:id", protect, todoController.deleteTodo);
+api.post("/todo", todoController.createNewTodo);
+api.put("/todo/:id", todoController.updateTodo);
+api.patch("/todo/:id/completion", todoController.toggleCompletion);
+api.delete("/todo/:id", todoController.deleteTodo);
 
 export default api;
