@@ -154,13 +154,32 @@
     background-color: #ccc;
     }
 
+    .logout-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .logout-btn:hover {
+        background: #c82333;
+    }
   </style>
 </head>
 <body>
 
   <div class="todo-container">
     <form id="todoForm">
-    <h1>To-do App</h1>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <h1>To-do App</h1>
+        <button type="button" class="logout-btn" onclick="logout()">Logout</button>
+      </div>
       <input type="text" id="title" placeholder="Task title" required />
       <textarea id="description" placeholder="Task description" required></textarea>
       <button type="submit">Add Tasks</button>
@@ -184,13 +203,28 @@
   </div>
 
   <script>
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login.html';
+    }
+
     const API_URL = "http://localhost:3000/api/todo";
     const todoList = document.getElementById("todoList");
     const form = document.getElementById("todoForm");
 
     async function getTodos() {
       todoList.innerHTML = "<p>loading data...</p>";
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (res.status === 401) {
+            // If unauthorized, redirect to login
+            window.location.href = '/login.html';
+            return;
+        }
       const data = await res.json();
       renderTodos(data.data);
     }
@@ -234,10 +268,13 @@
       const description = document.getElementById("description").value;
 
       await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description }),
-      });
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ title, description }),
+        });
 
       form.reset();
       getTodos();
@@ -297,6 +334,11 @@
       if (!confirm("Are you sure you want to delete this task?")) return;
       await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       getTodos();
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
     }
 
     getTodos();
